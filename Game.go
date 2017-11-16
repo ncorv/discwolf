@@ -8,7 +8,11 @@ type Game struct {
 }
 
 // Games -
+<<<<<<< Updated upstream
 var Games map[string]Game = make(map[string]Game)
+=======
+var Games = make(map[string]Game)
+>>>>>>> Stashed changes
 
 // StartGame - function will handle callback for !start, and will add a new gamestate struct to the global map
 func StartGame(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -40,6 +44,5 @@ func JoinGame(s *discordgo.Session, m *discordgo.MessageCreate) {
 			game.Players = append(game.Players, m.Author.Username)
 			s.ChannelMessageSend(m.ChannelID, m.Author.Username+" has joined the game.")
 		}
-
 	}
 }
