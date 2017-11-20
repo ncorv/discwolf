@@ -59,7 +59,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Content == "!start" {
 		StartGame(s, m)
 	}
-	if m.Content == "!new" {
+	if m.Content == "!PrintGame" {
+		PrintGame(s, m)
 	}
 	if m.Content == "!leave" {
 	}

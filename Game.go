@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
@@ -12,10 +14,9 @@ type Game struct {
 }
 
 // Games -
-var Games = make(map[string]Game)
+var Games = make(map[string]*Game)
 var mutex = &sync.Mutex{}
 
-// StartGame - function will handle callback for !start, and will add a new gamestate struct to the global map
 func StartGame(s *discordgo.Session, m *discordgo.MessageCreate) {
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -25,13 +26,12 @@ func StartGame(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if m.Content == "!start" {
-		var gameInstance Game
-		Games[m.ChannelID] = gameInstance
+		Games[m.ChannelID] = &Game{}
 		s.ChannelMessageSend(m.ChannelID, ":wolf: A new game of Werewolf is starting! For a tutorial, type !help.\r\n\r\n")
 	}
+
 }
 
-// JoinGame - callback for when someone says !join
 func JoinGame(s *discordgo.Session, m *discordgo.MessageCreate) {
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -43,13 +43,24 @@ func JoinGame(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Content == "!join" {
 		if game, ok := Games[m.ChannelID]; ok {
 			game.Players = append(game.Players, m.Author.Username)
-			s.ChannelMessageSend(m.ChannelID, m.Author.Username+" has joined the game.")
-		} else {
-			var gameInstance Game
-			Games[m.ChannelID] = gameInstance
-			s.ChannelMessageSend(m.ChannelID, ":wolf: A new game of Werewolf is starting! For a tutorial, type !help.\r\n\r\n")
-			game.Players = append(game.Players, m.Author.Username)
-			s.ChannelMessageSend(m.ChannelID, m.Author.Username+" has joined the game.")
+			fmt.Println(game.Players)
 		}
 	}
+}
+
+func PrintGame(s *discordgo.Session, m *discordgo.MessageCreate) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if m.Author.ID == s.State.User.ID {
+		return
+	}
+
+	if m.Content == "!PrintGame" {
+		if game, ok := Games[m.ChannelID]; ok {
+			fmt.Println(game.Players)
+			s.ChannelMessageSend(m.ChannelID, "Players: "+strings.Join(game.Players, ""))
+		}
+	}
+
 }
