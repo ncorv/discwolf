@@ -1,14 +1,18 @@
 package main
 
 import (
-	"strings"
+	"fmt"
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 type Game struct {
-	Players []string
+	PlayerMap map[string]*PlayerAtt
+}
+
+type PlayerAtt struct {
+	Role int
 }
 
 var Games = make(map[string]*Game)
@@ -26,7 +30,7 @@ func StartGame(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if Games[m.ChannelID] != nil {
 			s.ChannelMessageSend(m.ChannelID, "A game has already been started in this channel...")
 		} else {
-			Games[m.ChannelID] = &Game{}
+			Games[m.ChannelID] = &Game{make(map[string]*PlayerAtt)}
 			s.ChannelMessageSend(m.ChannelID, ":wolf: A new game of Werewolf is starting! For a tutorial, type !help.\r\n\r\n")
 		}
 	}
@@ -42,29 +46,29 @@ func JoinGame(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if m.Content == "!join" {
 		if game, ok := Games[m.ChannelID]; ok {
-			if !sliceContainsString(game.Players, m.Author.Username) {
-				game.Players = append(game.Players, m.Author.Username)
-				s.ChannelMessageSend(m.ChannelID, m.Author.Username+" has joined the game!")
-			} else {
-				s.ChannelMessageSend(m.ChannelID, m.Author.Username+", you have already joined the game...")
-			}
-
+			fmt.Println(game)
 		} else {
 			Games[m.ChannelID] = &Game{}
 			s.ChannelMessageSend(m.ChannelID, ":wolf: A new game of Werewolf is starting! For a tutorial, type !help.\r\n\r\n")
-			Games[m.ChannelID].Players = append(Games[m.ChannelID].Players, m.Author.Username)
+			Games[m.ChannelID].PlayerMap[m.Author.Username] = &PlayerAtt{Role: 0}
 			s.ChannelMessageSend(m.ChannelID, m.Author.Username+" has joined the game!")
 		}
 	}
 }
 
-func sliceContainsString(stringSlice []string, searchString string) bool {
-	for _, value := range stringSlice {
-		if value == searchString {
-			return true
+func LeaveGame(s *discordgo.Session, m *discordgo.MessageCreate) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if m.Author.ID == s.State.User.ID {
+		return
+	}
+
+	if m.Content == "!leave" {
+		if game, ok := Games[m.ChannelID]; ok {
+			fmt.Println(game)
 		}
 	}
-	return false
 }
 
 func PrintGame(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -77,7 +81,8 @@ func PrintGame(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if m.Content == "!PrintGame" {
 		if game, ok := Games[m.ChannelID]; ok {
-			s.ChannelMessageSend(m.ChannelID, "Players: "+strings.Join(game.Players, ", "))
+			fmt.Println(game)
+			s.ChannelMessageSend(m.ChannelID, "Players: ") //+strings.Join(game.Players, ", "))
 		}
 	}
 }

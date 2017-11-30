@@ -63,6 +63,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		PrintGame(s, m)
 	}
 	if m.Content == "!leave" {
+		LeaveGame(s, m)
 	}
 	if m.Content == "!end" {
 	}
