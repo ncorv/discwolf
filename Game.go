@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
@@ -48,7 +49,7 @@ func JoinGame(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if game, ok := Games[m.ChannelID]; ok {
 			fmt.Println(game)
 		} else {
-			Games[m.ChannelID] = &Game{}
+			Games[m.ChannelID] = &Game{make(map[string]*PlayerAtt)}
 			s.ChannelMessageSend(m.ChannelID, ":wolf: A new game of Werewolf is starting! For a tutorial, type !help.\r\n\r\n")
 			Games[m.ChannelID].PlayerMap[m.Author.Username] = &PlayerAtt{Role: 0}
 			s.ChannelMessageSend(m.ChannelID, m.Author.Username+" has joined the game!")
@@ -82,7 +83,11 @@ func PrintGame(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Content == "!PrintGame" {
 		if game, ok := Games[m.ChannelID]; ok {
 			fmt.Println(game)
-			s.ChannelMessageSend(m.ChannelID, "Players: ") //+strings.Join(game.Players, ", "))
+			for k, v := range Games[m.ChannelID].PlayerMap {
+				fmt.Println("Player: " + k + " Role: " + strconv.Itoa(v.Role))
+				s.ChannelMessageSend(m.ChannelID, "Player: "+k+" Role: "+strconv.Itoa(v.Role))
+			}
+
 		}
 	}
 }
