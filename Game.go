@@ -46,11 +46,12 @@ func JoinGame(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if m.Content == "!join" {
-		if game, ok := Games[m.ChannelID]; ok {
-			fmt.Println(game)
-		} else {
+		if Games[m.ChannelID] == nil {
 			Games[m.ChannelID] = &Game{make(map[string]*PlayerAtt)}
 			s.ChannelMessageSend(m.ChannelID, ":wolf: A new game of Werewolf is starting! For a tutorial, type !help.\r\n\r\n")
+			Games[m.ChannelID].PlayerMap[m.Author.Username] = &PlayerAtt{Role: 0}
+			s.ChannelMessageSend(m.ChannelID, m.Author.Username+" has joined the game!")
+		} else {
 			Games[m.ChannelID].PlayerMap[m.Author.Username] = &PlayerAtt{Role: 0}
 			s.ChannelMessageSend(m.ChannelID, m.Author.Username+" has joined the game!")
 		}
@@ -81,8 +82,7 @@ func PrintGame(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if m.Content == "!PrintGame" {
-		if game, ok := Games[m.ChannelID]; ok {
-			fmt.Println(game)
+		if Games[m.ChannelID] != nil {
 			for k, v := range Games[m.ChannelID].PlayerMap {
 				fmt.Println("Player: " + k + " Role: " + strconv.Itoa(v.Role))
 				s.ChannelMessageSend(m.ChannelID, "Player: "+k+" Role: "+strconv.Itoa(v.Role))
