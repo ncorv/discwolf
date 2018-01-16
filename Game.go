@@ -67,8 +67,10 @@ func LeaveGame(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if m.Content == "!leave" {
-		if game, ok := Games[m.ChannelID]; ok {
-			fmt.Println(game)
+		if Games[m.ChannelID].PlayerMap[m.Author.Username] != nil {
+			delete(Games[m.ChannelID].PlayerMap, m.Author.Username)
+			s.ChannelMessageSend(m.ChannelID, m.Author.Username+" has left the game!")
+
 		}
 	}
 }
@@ -90,4 +92,5 @@ func PrintGame(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		}
 	}
+
 }
